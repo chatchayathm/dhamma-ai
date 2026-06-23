@@ -3,7 +3,7 @@ import stats from '@/data/dana-stats.json';
 import { DanaButton } from '@/components/DanaButton';
 
 export const metadata = {
-  title: 'ความโปร่งใสด้านการเงิน — Dhamma AI',
+  title: 'เราใช้เงินที่คุณสนับสนุนไปกับอะไรบ้าง — Dhamma AI',
 };
 
 export default function DanaTransparencyPage() {
@@ -12,7 +12,7 @@ export default function DanaTransparencyPage() {
 
   return (
     <main className="dana-page">
-      <h1>ความโปร่งใสด้านการเงิน</h1>
+      <h1>เราใช้เงินที่คุณสนับสนุนไปกับอะไรบ้าง</h1>
       <p className="dana-page-intro">
         Dhamma AI เชื่อในความโปร่งใสค่ะ ทุกบาทที่ได้รับการสนับสนุนนำไปใช้จ่ายค่าใช้จ่ายจริงที่เกิดขึ้น
         เพื่อให้บริการนี้เปิดให้ทุกคนใช้ฟรีต่อไปได้ค่ะ

@@ -138,8 +138,8 @@ export default function ChatPage() {
     <div className="chat-wrap">
       {messages.length === 0 && (
         <div className="intro">
-          <h1>🪷 สนทนาธรรมกับพระไตรปิฎก</h1>
-          <p>ถามคำถามเกี่ยวกับพระธรรม แล้วรับคำตอบพร้อมอ้างอิงเล่ม นิกาย และพระสูตรที่แท้จริง<br />จากพระไตรปิฎกภาษาไทย ฉบับสยามรัฐ 45 เล่ม</p>
+          <h1>🪷 ถามอะไรก็ได้ เราจะหาคำตอบธรรมะตามพระไตรปิฎกให้</h1>
+          <p>ไม่สบายใจ? หาคำตอบแบบธรรมะ ๆ</p>
           <div className="suggest">
             {SUGGESTIONS.map((s) => (
               <button key={s} onClick={() => submit(s)}>{s}</button>
@@ -185,7 +185,7 @@ export default function ChatPage() {
           <textarea
             ref={taRef}
             rows={1}
-            placeholder="พิมพ์คำถามเกี่ยวกับพระธรรม…"
+            placeholder="ถามอะไรก็ได้"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={onKey}

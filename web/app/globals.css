@@ -18,7 +18,7 @@ html, body {
   padding: 0;
   background: var(--cream);
   color: var(--brown);
-  font-family: 'Sarabun', system-ui, sans-serif;
+  font-family: 'Kanit', system-ui, sans-serif;
   line-height: 1.7;
   -webkit-font-smoothing: antialiased;
 }
