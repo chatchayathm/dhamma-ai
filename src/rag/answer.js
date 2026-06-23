@@ -97,24 +97,6 @@ export async function ask(question, { tone, ...retrieveOpts } = {}) {
     `${TONE_IMMUTABLE_RULES}\n\n` +
     `เนื้อหาอ้างอิงจากพระไตรปิฎก:\n${context}`;
 
-  const msg = await claude().messages.create({
-    model: config.rag.model,
-    max_tokens: 1500,
-    system,
-    messages: [{ role: 'user', content: `คำถามของผู้ใช้: ${question}` }],
-  });
-
-  let answer = msg.content
-    .filter((b) => b.type === 'text')
-    .map((b) => b.text)
-    .join('')
-    .trim();
-
-  // Guarantee the structured citation block is present even if the model omits it.
-  if (!answer.includes('📚 อ้างอิง')) {
-    answer += `\n\n${citationBlock(citations)}`;
-  }
-
   // Raw source chunks so the UI can show the actual scripture text (Phase 5:
   // let users verify, and separate original text from the AI's interpretation).
   const sources = chunks.map((c) => ({
@@ -126,6 +108,49 @@ export async function ask(question, { tone, ...retrieveOpts } = {}) {
     score: c.score,
     text: c.text,
   }));
+
+  let msg;
+  try {
+    msg = await claude().messages.create({
+      model: config.rag.model,
+      max_tokens: 1500,
+      system,
+      messages: [{ role: 'user', content: `คำถามของผู้ใช้: ${question}` }],
+    });
+  } catch (e) {
+    // Anthropic overloaded (529) / rate-limited (429) / transient 5xx, even after
+    // retries → degrade gracefully: friendly message + the real scripture sources
+    // so the user still gets value and no scary error.
+    const status = e?.status;
+    if (status === 429 || status === 529 || (status >= 500 && status < 600) || !status) {
+      return {
+        answer:
+          'ขณะนี้ระบบ AI มีผู้ใช้งานจำนวนมาก ทำให้ยังตอบไม่ได้ชั่วคราว กรุณาลองถามใหม่อีกครั้งในอีกสักครู่ค่ะ 🙏\n\n' +
+          'ระหว่างนี้ท่านสามารถอ่านข้อความต้นฉบับจากพระไตรปิฎกที่ระบบค้นพบได้ที่ "🔍 ข้อความต้นฉบับ" ด้านล่างค่ะ\n\n' +
+          citationBlock(citations),
+        citations,
+        sources,
+        retrieved_chunks: retrieved,
+        confidence,
+        top_score: topScore,
+        tone: activeTone,
+        retrieval_stats: stats,
+        overloaded: true,
+      };
+    }
+    throw e;
+  }
+
+  let answer = msg.content
+    .filter((b) => b.type === 'text')
+    .map((b) => b.text)
+    .join('')
+    .trim();
+
+  // Guarantee the structured citation block is present even if the model omits it.
+  if (!answer.includes('📚 อ้างอิง')) {
+    answer += `\n\n${citationBlock(citations)}`;
+  }
 
   return {
     answer,
