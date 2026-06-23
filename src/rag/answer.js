@@ -1,6 +1,6 @@
-import Anthropic from '@anthropic-ai/sdk';
 import { config } from '../config.js';
-import { retrieve, uniqueCitations } from './retrieve.js';
+import { claude } from '../llm/claude.js';
+import { smartRetrieve, uniqueCitations } from './retrieve.js';
 
 const SYSTEM_RULES = `คุณคือผู้ช่วยศึกษาพระธรรมที่มีความรู้ลึกในพระไตรปิฎกภาษาไทย ฉบับสยามรัฐ 45 เล่ม
 
@@ -67,20 +67,13 @@ function citationBlock(citations) {
   return `📚 อ้างอิง:\n${lines.join('\n')}`;
 }
 
-let _client;
-function anthropic() {
-  if (!config.rag.anthropicApiKey) throw new Error('ANTHROPIC_API_KEY is not set in .env');
-  if (!_client) _client = new Anthropic({ apiKey: config.rag.anthropicApiKey });
-  return _client;
-}
-
 // Main entry: question → grounded answer + citations + confidence.
 // opts.tone ∈ friendly | formal | practitioner (default formal) changes style only.
 export async function ask(question, { tone, ...retrieveOpts } = {}) {
   const activeTone = TONE_INSTRUCTIONS[tone] ? tone : DEFAULT_TONE;
-  const { chunks, confidence, topScore, retrieved } = await retrieve(question, retrieveOpts);
+  const { chunks, confidence, topScore, retrieved, stats } = await smartRetrieve(question, retrieveOpts);
 
-  // No chunk cleared the 0.75 floor → return the canned not-found response.
+  // No chunk cleared the floor → return the canned not-found response.
   // We never call Claude here, so there is zero chance of a fabricated citation.
   if (!chunks.length) {
     return {
@@ -91,6 +84,7 @@ export async function ask(question, { tone, ...retrieveOpts } = {}) {
       confidence: 'not_found',
       top_score: topScore,
       tone: activeTone,
+      retrieval_stats: stats,
     };
   }
 
@@ -103,7 +97,7 @@ export async function ask(question, { tone, ...retrieveOpts } = {}) {
     `${TONE_IMMUTABLE_RULES}\n\n` +
     `เนื้อหาอ้างอิงจากพระไตรปิฎก:\n${context}`;
 
-  const msg = await anthropic().messages.create({
+  const msg = await claude().messages.create({
     model: config.rag.model,
     max_tokens: 1500,
     system,
@@ -141,5 +135,6 @@ export async function ask(question, { tone, ...retrieveOpts } = {}) {
     confidence,
     top_score: topScore,
     tone: activeTone,
+    retrieval_stats: stats,
   };
 }

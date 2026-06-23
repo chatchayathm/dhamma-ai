@@ -43,6 +43,7 @@ app.post(
       retrieved_chunks: result.retrieved_chunks,
       confidence: result.confidence,
       tone: result.tone,
+      retrieval_stats: result.retrieval_stats,
     });
   }),
 );

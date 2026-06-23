@@ -9,7 +9,10 @@ import { fetchVolumePages } from './sources/fetch84000.js';
 import { extractBodyText, segmentSuttas } from './parse/parseSutta.js';
 import { chunkVolume } from './chunk/chunker.js';
 import { embedTexts, embedInfo } from './embed/embedder.js';
-import { ensureCollection, upsertChunks } from './store/qdrant.js';
+import { ensureCollection, upsertChunks, ensureCrossRefIndex } from './store/qdrant.js';
+import { extractCrossRefs } from './rag/crossrefs.js';
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // ── CLI ────────────────────────────────────────────────────────────
 const args = process.argv.slice(2);
@@ -20,6 +23,7 @@ const opt = (name, def) => {
 };
 const DRY_RUN = flag('dry-run');
 const DEMO = flag('demo');
+const CROSSREFS = flag('crossrefs'); // Phase 9B: extract cross-ref metadata via Claude (costs $ per chunk)
 const VOLS = parseVolumeArg(opt('volumes'));
 
 const OUT_DIR = path.resolve('data/chunks');
@@ -64,6 +68,21 @@ async function ingestVolume(vol) {
   const chunks = chunkVolume(sections, vol);
   log(`  ✓ เล่มที่ ${vol.volume}: ${chunks.length} chunk(s) from ${sections.length} section(s)`);
 
+  // Phase 9B: cross-reference extraction (one Claude call per chunk). Opt-in via
+  // --crossrefs because it adds real cost/time. Enriches metadata in place.
+  if (CROSSREFS) {
+    log(`  ↳ extracting cross-refs for ${chunks.length} chunk(s) via Claude (this costs API $$ and is slow)…`);
+    for (let i = 0; i < chunks.length; i++) {
+      const cr = await extractCrossRefs(chunks[i].text);
+      chunks[i].metadata = { ...chunks[i].metadata, ...cr };
+      if ((i + 1) % 25 === 0 || i + 1 === chunks.length) {
+        log(`     · cross-refs ${i + 1}/${chunks.length}`);
+      }
+      await sleep(500); // gentle on the rate limit
+    }
+    log('  ✓ cross-ref extraction complete');
+  }
+
   // Persist chunks + metadata to JSON BEFORE embedding (Step 1.2 requirement).
   await mkdir(OUT_DIR, { recursive: true });
   const jsonPath = path.join(OUT_DIR, `vol-${vol.volume}.json`);
@@ -91,7 +110,12 @@ async function main() {
   log(`Qdrant    : ${DRY_RUN ? '(skipped)' : config.qdrant.url + ' / ' + config.qdrant.collection}`);
   log(`Volumes   : ${VOLS.join(', ')}`);
 
-  if (!DRY_RUN) await ensureCollection();
+  log(`Cross-refs: ${CROSSREFS ? 'ON (Claude per chunk)' : 'off'}`);
+
+  if (!DRY_RUN) {
+    await ensureCollection();
+    if (CROSSREFS) await ensureCrossRefIndex();
+  }
 
   const targets = VOLS.map(getVolume).filter(Boolean);
   if (targets.length !== VOLS.length) {

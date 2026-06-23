@@ -30,10 +30,11 @@ export async function ensureCollection() {
       vectors: { size: activeDims(), distance: 'Cosine' },
     });
     // Payload indexes for fast metadata filtering (browse/search endpoints).
-    for (const field of ['volume', 'pitaka', 'nikaya', 'sutta_number']) {
-      await c
-        .createPayloadIndex(name, { field_name: field, field_schema: 'keyword' })
-        .catch(() => {});
+    // volume is an integer — Qdrant Cloud rejects integer match() against a
+    // keyword index, so it MUST be 'integer'. The rest are strings (keyword).
+    const indexes = { volume: 'integer', pitaka: 'keyword', nikaya: 'keyword', sutta_number: 'keyword' };
+    for (const [field, schema] of Object.entries(indexes)) {
+      await c.createPayloadIndex(name, { field_name: field, field_schema: schema }).catch(() => {});
     }
   }
   return name;
@@ -151,4 +152,30 @@ export async function getChunksFor(volume, suttaNumber, suttaName) {
   return res.points
     .map((p) => p.payload)
     .sort((a, b) => (a.chunk_index || 0) - (b.chunk_index || 0));
+}
+
+// Phase 9B: a full-text index on sutta_name lets cross-reference lookups match
+// a referenced sutta by name. Idempotent — safe to call on every ingest.
+export async function ensureCrossRefIndex() {
+  const c = client();
+  await c
+    .createPayloadIndex(config.qdrant.collection, { field_name: 'sutta_name', field_schema: 'text' })
+    .catch(() => {});
+}
+
+// Look up one chunk whose sutta_name matches a referenced name (full-text).
+// Returns [] on any error (e.g. text index not present) so callers never break.
+export async function crossRefLookup(refName, limit = 1) {
+  try {
+    const c = client();
+    const res = await c.scroll(config.qdrant.collection, {
+      filter: { must: [{ key: 'sutta_name', match: { text: refName } }] },
+      limit,
+      with_payload: true,
+      with_vector: false,
+    });
+    return res.points.map((p) => p.payload);
+  } catch {
+    return [];
+  }
 }

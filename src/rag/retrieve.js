@@ -1,6 +1,8 @@
 import { config } from '../config.js';
 import { embedQuery } from '../embed/embedder.js';
 import { searchVectors } from '../store/qdrant.js';
+import { classifyQuestion, buildTopicShouldFilter } from './topics.js';
+import { expandWithCrossRefs } from './crossrefs.js';
 
 // Map the top similarity score to a confidence label. Calibrated to
 // voyage-multilingual-2's Thai cosine range (~0.4–0.6 for relevant matches).
@@ -38,6 +40,67 @@ export async function retrieve(question, { topK = config.rag.topK, minScore = co
   }
 
   return { question, chunks, topScore, confidence, retrieved: chunks.length };
+}
+
+const sizeOf = (s) => Array.from(s || '').length;
+const bigEnough = (h) => sizeOf(h.text) >= config.rag.minChunkChars;
+
+// Phase 9 — smart retrieval: classify topic → filtered search (with broad
+// fallback) → expand with cross-references. Returns chunks + retrieval_stats.
+export async function smartRetrieve(
+  question,
+  { topK = config.rag.topK, minScore = config.rag.minScore } = {},
+) {
+  const vector = await embedQuery(question);
+  const cls = await classifyQuestion(question);
+
+  // Apply the topic filter only when we're confident in the classification.
+  const useFilter = cls.topic && cls.topic !== 'อื่นๆ' && cls.confidence > 0.7;
+  const filter = useFilter ? buildTopicShouldFilter(cls.filter) : null;
+
+  let hits = [];
+  let filterApplied = Boolean(filter);
+  try {
+    hits = (await searchVectors(vector, { topK: topK * 2, scoreThreshold: minScore, filter })).filter(bigEnough);
+  } catch {
+    // A missing/incompatible payload index would 400 here — fall through to broad.
+    hits = [];
+  }
+
+  // Fallback: too few results under the filter (or it errored) → search broad.
+  if (hits.length < 3) {
+    hits = (await searchVectors(vector, { topK: topK * 2, scoreThreshold: minScore, filter: null })).filter(bigEnough);
+    filterApplied = false;
+  }
+
+  const semantic = hits.slice(0, topK);
+  // Expand with explicitly-referenced suttas (Phase 9B), then trim to a char budget.
+  let expanded = await expandWithCrossRefs(semantic, { max: topK + 2 });
+  let used = 0;
+  const chunks = [];
+  for (const c of expanded) {
+    const len = sizeOf(c.text);
+    if (used + len > config.rag.maxContextChars && chunks.length) break;
+    used += len;
+    chunks.push(c);
+  }
+
+  const topScore = semantic.length ? semantic[0].score : null;
+  const confidence = semantic.length ? scoreConfidence(topScore) : 'not_found';
+  return {
+    question,
+    chunks,
+    topScore,
+    confidence,
+    retrieved: chunks.length,
+    stats: {
+      semantic_chunks: semantic.length,
+      crossref_chunks: chunks.filter((c) => c.source === 'cross_reference').length,
+      topic_classified: cls.topic,
+      topic_confidence: cls.confidence,
+      filter_applied: filterApplied,
+    },
+  };
 }
 
 // Format a citation object from a chunk's payload.
