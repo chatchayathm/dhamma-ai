@@ -1,0 +1,14 @@
+{
+  "last_updated": "มิถุนายน 2569",
+  "total_received": 0,
+  "total_spent": 0,
+  "questions_answered": 0,
+  "unique_users": 0,
+  "expenses": [
+    { "name": "Claude API", "detail": "ค่า generation คำตอบธรรมะ", "amount": 0 },
+    { "name": "Voyage API", "detail": "ค่า embedding พระไตรปิฎก", "amount": 0 },
+    { "name": "Qdrant Cloud", "detail": "ค่า vector database", "amount": 0 },
+    { "name": "Vercel", "detail": "ค่า hosting และ deployment", "amount": 0 },
+    { "name": "Domain และอื่นๆ", "detail": "ค่าใช้จ่ายอื่นที่เกิดขึ้นจริง", "amount": 0 }
+  ]
+}

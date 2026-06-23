@@ -1,0 +1,291 @@
+:root {
+  --gold: #b7950b;
+  --gold-soft: #d4b43c;
+  --brown: #2c1810;
+  --brown-soft: #5b463a;
+  --cream: #fdf6e3;
+  --cream-deep: #f5ebcf;
+  --sage: #7d9b76;
+  --sage-soft: #e3ecdf;
+  --shadow: 0 2px 14px rgba(44, 24, 16, 0.08);
+  --radius: 16px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--cream);
+  color: var(--brown);
+  font-family: 'Sarabun', system-ui, sans-serif;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--gold); }
+
+.container {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 18px;
+}
+
+/* ── Header ─────────────────────────────────────────── */
+.site-header {
+  border-bottom: 1px solid var(--cream-deep);
+  background: var(--cream);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.site-header .inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.15rem; color: var(--brown); text-decoration: none; }
+.brand .lotus { font-size: 1.4rem; }
+.nav-link { font-size: 0.95rem; color: var(--brown-soft); text-decoration: none; padding: 6px 12px; border-radius: 999px; }
+.nav-link:hover { background: var(--cream-deep); }
+.nav-link.active { background: var(--gold); color: #fff; }
+
+/* ── Chat ───────────────────────────────────────────── */
+.chat-wrap { padding: 24px 0 160px; min-height: 60vh; }
+.intro { text-align: center; color: var(--brown-soft); margin: 40px 0; }
+.intro h1 { color: var(--brown); font-size: 1.5rem; margin-bottom: 8px; }
+.suggest { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 18px; }
+.suggest button {
+  background: #fff; border: 1px solid var(--cream-deep); color: var(--brown-soft);
+  padding: 8px 14px; border-radius: 999px; cursor: pointer; font-family: inherit; font-size: 0.9rem;
+}
+.suggest button:hover { border-color: var(--gold); color: var(--gold); }
+
+.msg { margin: 18px 0; }
+.msg.user .bubble {
+  background: var(--gold); color: #fff; padding: 12px 16px; border-radius: var(--radius);
+  border-bottom-right-radius: 4px; display: inline-block; max-width: 85%; margin-left: auto;
+}
+.msg.user { text-align: right; }
+.msg.ai .bubble {
+  background: #fff; padding: 16px 18px; border-radius: var(--radius); border-bottom-left-radius: 4px;
+  box-shadow: var(--shadow); border: 1px solid var(--cream-deep);
+}
+.answer-md > :first-child { margin-top: 0; }
+.answer-md > :last-child { margin-bottom: 0; }
+.answer-md table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 0.92rem; }
+.answer-md th, .answer-md td { border: 1px solid var(--cream-deep); padding: 6px 10px; text-align: left; }
+.answer-md th { background: var(--cream-deep); }
+.answer-md code { background: var(--cream-deep); padding: 1px 5px; border-radius: 5px; }
+
+/* ── Confidence badge ───────────────────────────────── */
+.meta-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+.badge { font-size: 0.78rem; padding: 3px 10px; border-radius: 999px; font-weight: 600; }
+.badge.high { background: var(--sage-soft); color: #3f6b39; }
+.badge.medium { background: #fbf0cd; color: #8a6d0b; }
+.badge.low { background: #f5e2d8; color: #9c5a3c; }
+.badge.not_found { background: #eee; color: #777; }
+.meta-dim { font-size: 0.8rem; color: var(--brown-soft); }
+
+/* ── Expandable cards ───────────────────────────────── */
+details.card {
+  margin-top: 12px; background: var(--cream); border: 1px solid var(--cream-deep);
+  border-radius: 12px; padding: 0; overflow: hidden;
+}
+details.card > summary {
+  cursor: pointer; padding: 10px 14px; font-weight: 600; font-size: 0.9rem; color: var(--brown);
+  list-style: none; display: flex; align-items: center; gap: 8px;
+}
+details.card > summary::-webkit-details-marker { display: none; }
+details.card[open] > summary { border-bottom: 1px solid var(--cream-deep); }
+.card-body { padding: 12px 14px; }
+.cite-item {
+  padding: 8px 0; border-bottom: 1px dashed var(--cream-deep); font-size: 0.9rem; color: var(--brown);
+}
+.cite-item:last-child { border-bottom: none; }
+.cite-vol { color: var(--gold); font-weight: 700; }
+.source-item { margin-bottom: 14px; }
+.source-head { font-size: 0.85rem; color: var(--sage); font-weight: 600; margin-bottom: 4px; }
+.source-text {
+  background: #fff; border-left: 3px solid var(--sage); padding: 10px 12px; border-radius: 8px;
+  font-size: 0.9rem; white-space: pre-wrap; color: var(--brown-soft);
+}
+.report-btn {
+  background: none; border: none; color: var(--brown-soft); font-size: 0.8rem; cursor: pointer;
+  text-decoration: underline; font-family: inherit; padding: 0;
+}
+.report-btn:hover { color: var(--gold); }
+
+/* ── Input bar ──────────────────────────────────────── */
+.input-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, var(--cream) 28%);
+  padding: 20px 18px 24px;
+}
+.input-inner {
+  max-width: 760px; margin: 0 auto; display: flex; gap: 10px; align-items: flex-end;
+  background: #fff; border: 1.5px solid var(--cream-deep); border-radius: 22px; padding: 8px 8px 8px 16px;
+  box-shadow: var(--shadow);
+}
+.input-inner:focus-within { border-color: var(--gold); }
+.input-inner textarea {
+  flex: 1; border: none; resize: none; outline: none; font-family: inherit; font-size: 1rem;
+  background: transparent; color: var(--brown); max-height: 140px; line-height: 1.6; padding: 6px 0;
+}
+.send-btn {
+  background: var(--gold); color: #fff; border: none; width: 42px; height: 42px; border-radius: 50%;
+  cursor: pointer; font-size: 1.1rem; flex-shrink: 0; display: grid; place-items: center;
+}
+.send-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.free-note { text-align: center; font-size: 0.75rem; color: var(--brown-soft); margin-top: 8px; }
+
+/* ── Tone selector ──────────────────────────────────── */
+.tone-selector { max-width: 760px; margin: 0 auto 8px; display: flex; gap: 8px; justify-content: center; }
+.tone-btn {
+  background: #fff; border: 1.5px solid var(--cream-deep); color: var(--brown-soft);
+  padding: 6px 14px; border-radius: 999px; cursor: pointer; font-family: inherit; font-size: 0.85rem;
+  transition: all 0.15s;
+}
+.tone-btn:hover { border-color: var(--gold-soft); }
+.tone-btn.active { background: var(--gold); border-color: var(--gold); color: #fff; font-weight: 600; }
+
+.dots span { animation: blink 1.4s infinite both; }
+.dots span:nth-child(2){ animation-delay:.2s } .dots span:nth-child(3){ animation-delay:.4s }
+@keyframes blink { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
+
+/* ── Browse ─────────────────────────────────────────── */
+.browse-wrap { padding: 28px 0 80px; }
+.pitaka-group { margin-bottom: 26px; }
+.pitaka-title { color: var(--gold); font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; }
+.vol-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.vol-card {
+  background: #fff; border: 1px solid var(--cream-deep); border-radius: 12px; padding: 12px 14px;
+  cursor: pointer; text-align: left; font-family: inherit;
+}
+.vol-card:hover { border-color: var(--gold); box-shadow: var(--shadow); }
+.vol-card .vno { color: var(--gold); font-weight: 700; font-size: 0.85rem; }
+.vol-card .vtitle { font-size: 0.92rem; color: var(--brown); margin-top: 2px; }
+.vol-card .vnik { font-size: 0.78rem; color: var(--brown-soft); margin-top: 2px; }
+.chapter-list { margin-top: 8px; }
+.chapter-row {
+  display: flex; justify-content: space-between; gap: 12px; padding: 8px 12px; border-radius: 8px;
+  font-size: 0.92rem;
+}
+.chapter-row .cnum { color: var(--gold); font-weight: 600; }
+.chapter-btn {
+  width: 100%; background: var(--cream-deep); border: 1px solid transparent; cursor: pointer;
+  font-family: inherit; font-size: 0.92rem; color: var(--brown); text-align: left; margin-bottom: 4px;
+}
+.chapter-btn:hover { border-color: var(--gold); }
+.chapter-text { padding: 6px 12px 14px; }
+.chapter-text .source-text { max-height: 420px; overflow: auto; }
+.back-btn { background: none; border: none; color: var(--gold); cursor: pointer; font-family: inherit; font-size: 0.95rem; padding: 0; margin-bottom: 14px; }
+
+/* ── Footer ─────────────────────────────────────────── */
+.site-footer { border-top: 1px solid var(--cream-deep); margin-top: 40px; padding: 18px; }
+.footer-inner {
+  max-width: 760px; margin: 0 auto; display: flex; align-items: center; gap: 14px;
+  flex-wrap: wrap; justify-content: center; font-size: 0.85rem; color: var(--brown-soft);
+}
+.footer-free { font-weight: 600; }
+.footer-link { color: var(--brown-soft); text-decoration: underline; font-size: 0.82rem; }
+.footer-link:hover { color: var(--gold); }
+
+/* ── Dana (สนับสนุนการเผยแผ่ธรรมะ) ───────────────────── */
+.dana-wrapper { display: inline-block; }
+.dana-trigger {
+  background: none; border: 1px solid var(--gold-soft); color: var(--gold); cursor: pointer;
+  font-family: inherit; border-radius: 999px; transition: all 0.15s;
+}
+.dana-trigger:hover { background: var(--gold); color: #fff; }
+.dana-trigger.footer { font-size: 0.82rem; padding: 4px 12px; }
+.dana-trigger.after-feedback,
+.dana-trigger.transparency-page { font-size: 0.9rem; padding: 8px 18px; }
+
+.dana-panel, .dana-thankyou {
+  margin-top: 12px; background: #fff; border: 1px solid var(--cream-deep); border-radius: 14px;
+  padding: 18px; box-shadow: var(--shadow); text-align: left; max-width: 520px;
+}
+.dana-desc { font-size: 0.92rem; color: var(--brown-soft); margin: 0 0 14px; line-height: 1.7; }
+.dana-amounts { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.dana-amount-btn {
+  background: var(--cream); border: 1.5px solid var(--cream-deep); color: var(--brown);
+  padding: 8px 16px; border-radius: 10px; cursor: pointer; font-family: inherit; font-size: 0.9rem;
+}
+.dana-amount-btn:hover { border-color: var(--gold-soft); }
+.dana-amount-btn.selected { background: var(--gold); border-color: var(--gold); color: #fff; }
+.dana-custom-input {
+  width: 100%; padding: 9px 12px; border: 1.5px solid var(--cream-deep); border-radius: 10px;
+  font-family: inherit; font-size: 0.92rem; margin-bottom: 14px; outline: none;
+}
+.dana-custom-input:focus { border-color: var(--gold); }
+
+.dana-payment-placeholder {
+  background: var(--cream); border: 1px dashed var(--gold-soft); border-radius: 12px;
+  padding: 16px; margin-bottom: 14px; text-align: center;
+}
+.qr-box {
+  width: 160px; height: 160px; margin: 0 auto 10px; display: grid; place-items: center;
+  background: #fff; border: 2px dashed var(--brown-soft); border-radius: 10px;
+  color: var(--brown-soft); font-size: 0.8rem; padding: 10px;
+}
+.account-label { font-size: 0.78rem; color: var(--brown-soft); margin: 6px 0 2px; }
+.account-number { font-weight: 700; color: var(--brown); margin: 0; }
+.account-name { font-size: 0.85rem; color: var(--brown-soft); margin: 2px 0 0; }
+
+.dana-confirm-btn {
+  width: 100%; background: var(--sage); color: #fff; border: none; padding: 11px; border-radius: 10px;
+  cursor: pointer; font-family: inherit; font-size: 0.95rem; font-weight: 600;
+}
+.dana-confirm-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.dana-footer-note { font-size: 0.8rem; color: var(--brown-soft); text-align: center; margin: 12px 0 0; }
+.dana-close {
+  display: block; margin: 10px auto 0; background: none; border: none; color: var(--brown-soft);
+  cursor: pointer; font-family: inherit; font-size: 0.85rem; text-decoration: underline;
+}
+.dana-thankyou p { margin: 0 0 6px; }
+.dana-thankyou-sub { font-size: 0.85rem; color: var(--brown-soft); }
+
+/* ── Feedback widget ────────────────────────────────── */
+.feedback-widget { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--cream-deep); }
+.feedback-buttons { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.feedback-label { font-size: 0.85rem; color: var(--brown-soft); }
+.feedback-buttons button {
+  background: var(--cream); border: 1px solid var(--cream-deep); color: var(--brown-soft);
+  padding: 5px 12px; border-radius: 999px; cursor: pointer; font-family: inherit; font-size: 0.82rem;
+}
+.feedback-buttons button:hover { border-color: var(--gold); color: var(--gold); }
+.feedback-thanks { font-size: 0.85rem; color: var(--brown-soft); margin: 4px 0 0; }
+.dana-suggestion { background: var(--sage-soft); border-radius: 12px; padding: 14px; }
+.dana-suggestion-text { font-size: 0.9rem; color: var(--brown); margin: 0 0 10px; line-height: 1.7; }
+.dana-skip {
+  display: block; margin-top: 8px; background: none; border: none; color: var(--brown-soft);
+  cursor: pointer; font-family: inherit; font-size: 0.83rem; text-decoration: underline;
+}
+
+/* ── Transparency page ──────────────────────────────── */
+.dana-page { padding: 28px 0 60px; }
+.dana-page h1 { color: var(--brown); }
+.dana-page-intro { color: var(--brown-soft); line-height: 1.8; }
+.dana-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 22px 0; }
+.stat-card {
+  background: #fff; border: 1px solid var(--cream-deep); border-radius: 14px; padding: 18px;
+  text-align: center; box-shadow: var(--shadow);
+}
+.stat-number { display: block; font-size: 1.5rem; font-weight: 700; color: var(--gold); }
+.stat-label { display: block; font-size: 0.88rem; color: var(--brown); margin-top: 4px; }
+.stat-note { display: block; font-size: 0.75rem; color: var(--brown-soft); margin-top: 4px; }
+.dana-expenses, .dana-balance { margin: 26px 0; }
+.dana-expenses h2, .dana-balance h2 { color: var(--brown); font-size: 1.15rem; }
+.expenses-note, .balance-note { font-size: 0.85rem; color: var(--brown-soft); }
+.expenses-table { border-collapse: collapse; width: 100%; margin-top: 10px; font-size: 0.9rem; }
+.expenses-table th, .expenses-table td { border: 1px solid var(--cream-deep); padding: 8px 10px; text-align: left; }
+.expenses-table th { background: var(--cream-deep); }
+.expenses-table td:last-child, .expenses-table th:last-child { text-align: right; white-space: nowrap; }
+.total-row td { font-weight: 700; background: var(--cream); }
+.dana-cta {
+  background: var(--sage-soft); border-radius: 14px; padding: 20px; text-align: center; margin-top: 26px;
+}
+.dana-cta p { color: var(--brown); margin: 0 0 12px; }
