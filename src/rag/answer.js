@@ -1,6 +1,7 @@
 import { config } from '../config.js';
 import { claude } from '../llm/claude.js';
 import { smartRetrieve, uniqueCitations } from './retrieve.js';
+import { classifyUniversalQuestion, buildUniversalSystem } from './universal.js';
 
 const SYSTEM_RULES = `คุณคือผู้ช่วยศึกษาพระธรรมที่มีความรู้ลึกในพระไตรปิฎกภาษาไทย ฉบับสยามรัฐ 45 เล่ม
 
@@ -71,43 +72,50 @@ function citationBlock(citations) {
 // opts.tone ∈ friendly | formal | practitioner (default formal) changes style only.
 export async function ask(question, { tone, ...retrieveOpts } = {}) {
   const activeTone = TONE_INSTRUCTIONS[tone] ? tone : DEFAULT_TONE;
-  const { chunks, confidence, topScore, retrieved, stats } = await smartRetrieve(question, retrieveOpts);
 
-  // No chunk cleared the floor → return the canned not-found response.
-  // We never call Claude here, so there is zero chance of a fabricated citation.
-  if (!chunks.length) {
-    return {
-      answer: NOT_FOUND_ANSWER,
-      citations: [],
-      sources: [],
-      retrieved_chunks: 0,
-      confidence: 'not_found',
-      top_score: topScore,
-      tone: activeTone,
-      retrieval_stats: stats,
-    };
-  }
+  // Phase 11 — classify (category + Dhamma angle + story detection), then search
+  // the Tipitaka by the DHAMMA ANGLE rather than the surface words. e.g.
+  // "ดาวเคราะห์เกิดได้ยังไง" → search "อนิจจัง ปฏิจจสมุปบาท".
+  const cls = await classifyUniversalQuestion(question);
+  const searchText = cls.dhamma_angle || question;
+  const { chunks, confidence, topScore, retrieved, stats } = await smartRetrieve(searchText, retrieveOpts);
 
-  const citations = uniqueCitations(chunks);
-  const context = buildContext(chunks);
+  // Genuinely relevant scripture? (0.5 calibrated to voyage's Thai score range,
+  // not the spec's 0.65 which would almost never trigger.)
+  const hasDirectSource = topScore != null && topScore >= 0.5 && chunks.length > 0;
 
-  const system =
-    `${SYSTEM_RULES}\n\n` +
-    `รูปแบบการสื่อสาร (tone: ${activeTone}):\n${TONE_INSTRUCTIONS[activeTone]}\n\n` +
-    `${TONE_IMMUTABLE_RULES}\n\n` +
-    `เนื้อหาอ้างอิงจากพระไตรปิฎก:\n${context}`;
+  // Only surface citations/sources when the source is actually relevant — never
+  // force a citation onto an unrelated question.
+  const citations = hasDirectSource ? uniqueCitations(chunks) : [];
+  const sources = hasDirectSource
+    ? chunks.map((c) => ({
+        volume: c.volume,
+        pitaka: c.pitaka,
+        nikaya: c.nikaya || null,
+        sutta_name: c.sutta_name,
+        sutta_number: c.sutta_number || null,
+        score: c.score,
+        text: c.text,
+      }))
+    : [];
+  const context = hasDirectSource ? buildContext(chunks) : '';
 
-  // Raw source chunks so the UI can show the actual scripture text (Phase 5:
-  // let users verify, and separate original text from the AI's interpretation).
-  const sources = chunks.map((c) => ({
-    volume: c.volume,
-    pitaka: c.pitaka,
-    nikaya: c.nikaya || null,
-    sutta_name: c.sutta_name,
-    sutta_number: c.sutta_number || null,
-    score: c.score,
-    text: c.text,
-  }));
+  const category = cls.mode === 'story' ? 'story' : cls.category;
+  const system = buildUniversalSystem({ category, tone: activeTone, context, hasDirectSource });
+
+  const base = {
+    mode: cls.mode === 'story' ? 'story_mode' : 'universal_mode',
+    category,
+    dhamma_angle: cls.dhamma_angle,
+    has_direct_source: hasDirectSource,
+    citations,
+    sources,
+    retrieved_chunks: hasDirectSource ? retrieved : 0,
+    confidence: hasDirectSource ? confidence : 'low',
+    top_score: topScore,
+    tone: activeTone,
+    retrieval_stats: stats,
+  };
 
   let msg;
   try {
@@ -115,26 +123,21 @@ export async function ask(question, { tone, ...retrieveOpts } = {}) {
       model: config.rag.model,
       max_tokens: 1500,
       system,
-      messages: [{ role: 'user', content: `คำถามของผู้ใช้: ${question}` }],
+      messages: [{ role: 'user', content: question }],
     });
   } catch (e) {
     // Anthropic overloaded (529) / rate-limited (429) / transient 5xx, even after
-    // retries → degrade gracefully: friendly message + the real scripture sources
-    // so the user still gets value and no scary error.
+    // retries → degrade gracefully so the user never sees a scary error.
     const status = e?.status;
     if (status === 429 || status === 529 || (status >= 500 && status < 600) || !status) {
       return {
+        ...base,
         answer:
-          'ขณะนี้ระบบ AI มีผู้ใช้งานจำนวนมาก ทำให้ยังตอบไม่ได้ชั่วคราว กรุณาลองถามใหม่อีกครั้งในอีกสักครู่ค่ะ 🙏\n\n' +
-          'ระหว่างนี้ท่านสามารถอ่านข้อความต้นฉบับจากพระไตรปิฎกที่ระบบค้นพบได้ที่ "🔍 ข้อความต้นฉบับ" ด้านล่างค่ะ\n\n' +
-          citationBlock(citations),
-        citations,
-        sources,
-        retrieved_chunks: retrieved,
-        confidence,
-        top_score: topScore,
-        tone: activeTone,
-        retrieval_stats: stats,
+          'ขณะนี้ระบบ AI มีผู้ใช้งานจำนวนมาก ทำให้ยังตอบไม่ได้ชั่วคราว กรุณาลองถามใหม่อีกครั้งในอีกสักครู่ค่ะ 🙏' +
+          (hasDirectSource
+            ? '\n\nระหว่างนี้สามารถอ่านข้อความต้นฉบับจากพระไตรปิฎกที่ระบบค้นพบได้ที่ "🔍 ข้อความต้นฉบับ" ด้านล่างค่ะ\n\n' +
+              citationBlock(citations)
+            : ''),
         overloaded: true,
       };
     }
@@ -147,19 +150,10 @@ export async function ask(question, { tone, ...retrieveOpts } = {}) {
     .join('')
     .trim();
 
-  // Guarantee the structured citation block is present even if the model omits it.
-  if (!answer.includes('📚 อ้างอิง')) {
+  // Append the structured citation block only when a real source was used.
+  if (hasDirectSource && !answer.includes('📚 อ้างอิง')) {
     answer += `\n\n${citationBlock(citations)}`;
   }
 
-  return {
-    answer,
-    citations,
-    sources,
-    retrieved_chunks: retrieved,
-    confidence,
-    top_score: topScore,
-    tone: activeTone,
-    retrieval_stats: stats,
-  };
+  return { ...base, answer };
 }

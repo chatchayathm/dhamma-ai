@@ -44,6 +44,11 @@ app.post(
       confidence: result.confidence,
       tone: result.tone,
       retrieval_stats: result.retrieval_stats,
+      // Phase 11 — universal Dhamma
+      mode: result.mode,
+      category: result.category,
+      dhamma_angle: result.dhamma_angle,
+      has_direct_source: result.has_direct_source,
     });
   }),
 );

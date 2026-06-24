@@ -90,6 +90,16 @@ a { color: var(--gold); }
 .badge.not_found { background: #eee; color: #777; }
 .meta-dim { font-size: 0.8rem; color: var(--brown-soft); }
 
+/* Phase 11 — universal Dhamma */
+.dhamma-angle-tag {
+  display: inline-block; margin-top: 12px; background: var(--sage-soft); color: #3f6b39;
+  font-size: 0.82rem; padding: 5px 12px; border-radius: 999px; font-weight: 600;
+}
+.science-note {
+  margin-top: 10px; font-size: 0.82rem; color: var(--brown-soft); background: var(--cream-deep);
+  border-radius: 10px; padding: 8px 12px; line-height: 1.6;
+}
+
 /* ── Expandable cards ───────────────────────────────── */
 details.card {
   margin-top: 12px; background: var(--cream); border: 1px solid var(--cream-deep);

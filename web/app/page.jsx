@@ -45,9 +45,19 @@ function AiMessage({ m }) {
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.answer}</ReactMarkdown>
         </div>
 
+        {m.dhamma_angle && (
+          <div className="dhamma-angle-tag">🌿 มุมธรรมะ: {m.dhamma_angle}</div>
+        )}
+
+        {m.category === 'science_nature' && (
+          <p className="science-note">
+            คำตอบด้านวิทยาศาสตร์อิงข้อมูลทั่วไปค่ะ มุมธรรมะเป็นการชวนมองเพิ่มเติม ไม่ใช่การอธิบายแทนกันค่ะ 🙏
+          </p>
+        )}
+
         <div className="meta-row">
           <span className={`badge ${conf.cls}`}>{conf.th}</span>
-          <span className="meta-dim">ใช้ข้อมูล {m.retrieved_chunks} ส่วน</span>
+          {m.retrieved_chunks > 0 && <span className="meta-dim">ใช้ข้อมูล {m.retrieved_chunks} ส่วน</span>}
         </div>
 
         {m.citations?.length > 0 && (
