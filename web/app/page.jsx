@@ -199,23 +199,24 @@ export default function ChatPage() {
 
       <div className="chat-bottom">
         <div className="container">
-          <div className="dana-line">
-            <span className="footer-free">🪷 Dhamma AI ให้บริการฟรี</span>
-            <DanaButton context="footer" />
-            <Link href="/about/dana" className="footer-link">เราใช้เงินที่คุณสนับสนุนไปกับอะไรบ้าง</Link>
+          <div className="footer-bar">
+            <span className="footer-brand">🪷 Dhamma AI ให้บริการฟรี</span>
+            <div className="footer-actions">
+              <DanaButton context="footer" />
+              <Link href="/about/dana" className="footer-link">เราใช้เงินที่คุณสนับสนุนไปกับอะไรบ้าง</Link>
+            </div>
           </div>
-          <div className="tone-selector">
-            {TONES.map((t) => (
-              <button
-                key={t.id}
-                className={`tone-btn${tone === t.id ? ' active' : ''}`}
-                onClick={() => chooseTone(t.id)}
-                title={t.description}
-                type="button"
-              >
-                {t.icon} {t.label}
-              </button>
-            ))}
+          <div className="tone-dropdown-wrapper">
+            <select
+              className="tone-dropdown"
+              value={tone}
+              onChange={(e) => chooseTone(e.target.value)}
+              aria-label="เลือกโหมดการตอบ"
+            >
+              {TONES.map((t) => (
+                <option key={t.id} value={t.id}>{t.icon} {t.label}</option>
+              ))}
+            </select>
           </div>
           <div className="input-inner">
             <textarea
