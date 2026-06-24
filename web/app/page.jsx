@@ -22,9 +22,8 @@ const SUGGESTIONS = [
 ];
 
 const TONES = [
-  { id: 'friendly', emoji: '🙂', label: 'กันเอง' },
-  { id: 'formal', emoji: '🙏', label: 'ทางการ' },
-  { id: 'practitioner', emoji: '🧘', label: 'สายปฏิบัติ' },
+  { id: 'general', icon: '🌿', label: 'คนทั่วไป', description: 'ภาษาธรรมดา เข้าใจง่าย ไม่ต้องรู้ธรรมะมาก่อน' },
+  { id: 'dhamma', icon: '🪷', label: 'สายธรรมะ', description: 'ภาษาธรรมะ อ้างอิงพระสูตร เหมาะกับผู้ปฏิบัติ' },
 ];
 
 function Citation({ c }) {
@@ -99,7 +98,7 @@ export default function ChatPage() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [tone, setTone] = useState('formal');
+  const [tone, setTone] = useState('general');
   const bottomRef = useRef(null);
   const taRef = useRef(null);
   const scrollRef = useRef(null);
@@ -121,7 +120,7 @@ export default function ChatPage() {
   useEffect(() => {
     try {
       const saved = localStorage.getItem('dhamma_tone');
-      if (saved) setTone(saved);
+      if (saved && ['general', 'dhamma'].includes(saved)) setTone(saved);
     } catch {}
   }, []);
 
@@ -211,9 +210,10 @@ export default function ChatPage() {
                 key={t.id}
                 className={`tone-btn${tone === t.id ? ' active' : ''}`}
                 onClick={() => chooseTone(t.id)}
+                title={t.description}
                 type="button"
               >
-                {t.emoji} {t.label}
+                {t.icon} {t.label}
               </button>
             ))}
           </div>

@@ -27,14 +27,14 @@ const wrap = (fn) => (req, res) => fn(req, res).catch((e) => {
 app.get('/api/health', (_req, res) => res.json({ ok: true, model: config.rag.model }));
 
 // ── POST /api/ask ─────────────────────────────────────────────────
-// Body: { question: string, session_id?: string, tone?: friendly|formal|practitioner }
+// Body: { question: string, session_id?: string, tone?: general|dhamma }
 // Resp: { answer, citations[], sources[], retrieved_chunks, confidence, tone }
 app.post(
   '/api/ask',
   wrap(async (req, res) => {
     const question = (req.body?.question || '').trim();
     if (!question) return res.status(400).json({ error: 'question is required' });
-    const tone = req.body?.tone;
+    const tone = ['general', 'dhamma'].includes(req.body?.tone) ? req.body.tone : 'general';
     const result = await ask(question, { tone });
     res.json({
       answer: result.answer,

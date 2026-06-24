@@ -64,18 +64,43 @@ export async function classifyUniversalQuestion(question) {
   }
 }
 
-const TONE_LINE = {
-  friendly: 'เป็นกันเอง อบอุ่น สบายๆ ลงท้าย "นะ/เลย" ได้ — ห้ามใช้สรรพนามเรียกผู้ใช้ (เพื่อน/เธอ/คุณ/ท่าน)',
-  practitioner: 'เน้นปฏิบัติ เชื่อมกับการนำไปใช้จริง — สติ จิต สมาธิ',
-  formal: 'สุภาพ ชัดเจน มีน้ำหนัก',
+// Single source of truth for tones (Phase 13). Two tones only.
+export const toneConfig = {
+  general: {
+    id: 'general',
+    label: 'คนทั่วไป',
+    icon: '🌿',
+    description: 'ภาษาธรรมดา เข้าใจง่าย ไม่ต้องรู้ธรรมะมาก่อน',
+    systemInstruction: `ใช้ภาษาไทยธรรมดาที่คนทั่วไปพูดกันค่ะ เหมือนเพื่อนที่รู้เรื่องธรรมะแล้วมาเล่าให้ฟังแบบเป็นกันเอง
+- พูดตรงๆ เข้าใจง่าย ไม่ใช้ศัพท์บาลีโดยไม่อธิบาย
+- ถ้าต้องใช้ศัพท์บาลี ให้วงเล็บความหมายไว้เสมอ เช่น "โทสะ (ความโกรธ)" ไม่ใช่แค่ "โทสะ"
+- ใช้ตัวอย่างจากชีวิตประจำวันที่จับต้องได้
+- ใช้แค่ "พระพุทธเจ้าสอนว่า..." ไม่ใช้ "พระผู้มีพระภาคตรัสว่า..."
+- citation แบบเรียบง่าย เช่น "(จาก มหาสติปัฏฐานสูตร)"`,
+    citationFormat: '(จาก {sutta_name})',
+  },
+  dhamma: {
+    id: 'dhamma',
+    label: 'สายธรรมะ',
+    icon: '🪷',
+    description: 'ภาษาธรรมะ อ้างอิงพระสูตร เหมาะกับผู้ปฏิบัติ',
+    systemInstruction: `ใช้ภาษาธรรมะที่ผู้ปฏิบัติคุ้นเคยค่ะ อ้างอิงพระสูตรได้เต็มที่ ใช้ศัพท์บาลีได้โดยไม่ต้องอธิบายทุกคำ
+- ใช้ศัพท์บาลีได้ตามปกติ เช่น ขันธ์ อายตนะ วิปัสสนา
+- อ้างอิงพระสูตรแบบเต็ม เช่น "ใน มหาสติปัฏฐานสูตร ทีฆนิกาย มหาวรรค..."
+- เชื่อมกับการปฏิบัติได้เลย
+- citation แบบเต็ม เช่น "[พระไตรปิฎก เล่มที่ 10 — ทีฆนิกาย — มหาสติปัฏฐานสูตร ข้อ 273]"`,
+    citationFormat: '[พระไตรปิฎก เล่มที่ {volume} — {nikaya} — {sutta_name} ข้อ {sutta_number}]',
+  },
 };
+export const VALID_TONES = Object.keys(toneConfig);
+export const DEFAULT_TONE = 'general';
 
 // Build the universal-mode system prompt. Relaxes "answer only from scripture"
 // (so any question can get a Dhamma-lens answer) but KEEPS the hard rule against
 // fabricating citations or distorting facts.
 export function buildUniversalSystem({ category, tone, context, hasDirectSource }) {
   const guide = CATEGORY_PROMPTS[category] || CATEGORY_PROMPTS.other;
-  const toneLine = TONE_LINE[tone] || TONE_LINE.formal;
+  const toneLine = (toneConfig[tone] || toneConfig[DEFAULT_TONE]).systemInstruction;
   const sourceBlock = context
     ? `เนื้อหาจากพระไตรปิฎก (ใช้เฉพาะที่เกี่ยวข้องจริงๆ):\n${context}`
     : `(ไม่พบพระสูตรที่ตรงกับคำถามนี้โดยตรง)`;
