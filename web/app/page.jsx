@@ -3,8 +3,10 @@
 import { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import Link from 'next/link';
 import { askQuestion } from '../lib/api';
 import { FeedbackWidget } from '../components/FeedbackWidget';
+import { DanaButton } from '../components/DanaButton';
 
 const CONF_LABEL = {
   high: { th: 'ความมั่นใจสูง', cls: 'high' },
@@ -100,6 +102,20 @@ export default function ChatPage() {
   const [tone, setTone] = useState('formal');
   const bottomRef = useRef(null);
   const taRef = useRef(null);
+  const scrollRef = useRef(null);
+
+  // Auto-resize the textarea up to ~4 lines, then scroll internally.
+  function autoGrow() {
+    const el = taRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 96) + 'px';
+  }
+
+  // iOS Safari: when the keyboard opens, keep the latest message in view.
+  function onFocusInput() {
+    setTimeout(() => bottomRef.current?.scrollIntoView({ block: 'end' }), 300);
+  }
 
   // Restore saved tone preference (client-only to avoid SSR mismatch).
   useEffect(() => {
@@ -145,66 +161,79 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="chat-wrap">
-      {messages.length === 0 && (
-        <div className="intro">
-          <h1>🪷 ถามอะไรก็ได้ เราจะหาคำตอบธรรมะตามพระไตรปิฎกให้</h1>
-          <p>ไม่สบายใจ? หาคำตอบแบบธรรมะ ๆ</p>
-          <div className="suggest">
-            {SUGGESTIONS.map((s) => (
-              <button key={s} onClick={() => submit(s)}>{s}</button>
+    <div className="chat-page">
+      <div className="chat-scroll" ref={scrollRef}>
+        <div className="container chat-wrap">
+          {messages.length === 0 && (
+            <div className="intro">
+              <h1>🪷 ถามอะไรก็ได้ เราจะหาคำตอบธรรมะตามพระไตรปิฎกให้</h1>
+              <p>ไม่สบายใจ? หาคำตอบแบบธรรมะ ๆ</p>
+              <div className="suggest">
+                {SUGGESTIONS.map((s) => (
+                  <button key={s} onClick={() => submit(s)}>{s}</button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {messages.map((m, i) =>
+            m.role === 'user' ? (
+              <div className="msg user" key={i}><div className="bubble">{m.text}</div></div>
+            ) : (
+              <AiMessage m={m} key={i} />
+            ),
+          )}
+
+          {loading && (
+            <div className="msg ai">
+              <div className="bubble">
+                <span className="dots">กำลังค้นพระไตรปิฎก<span>.</span><span>.</span><span>.</span></span>
+              </div>
+            </div>
+          )}
+
+          {error && <div className="msg ai"><div className="bubble" style={{ color: '#9c5a3c' }}>{error}</div></div>}
+
+          <div ref={bottomRef} style={{ height: 1 }} />
+        </div>
+      </div>
+
+      <div className="chat-bottom">
+        <div className="container">
+          <div className="dana-line">
+            <span className="footer-free">🪷 Dhamma AI ให้บริการฟรี</span>
+            <DanaButton context="footer" />
+            <Link href="/about/dana" className="footer-link">เราใช้เงินที่คุณสนับสนุนไปกับอะไรบ้าง</Link>
+          </div>
+          <div className="tone-selector">
+            {TONES.map((t) => (
+              <button
+                key={t.id}
+                className={`tone-btn${tone === t.id ? ' active' : ''}`}
+                onClick={() => chooseTone(t.id)}
+                type="button"
+              >
+                {t.emoji} {t.label}
+              </button>
             ))}
           </div>
-        </div>
-      )}
-
-      {messages.map((m, i) =>
-        m.role === 'user' ? (
-          <div className="msg user" key={i}><div className="bubble">{m.text}</div></div>
-        ) : (
-          <AiMessage m={m} key={i} />
-        ),
-      )}
-
-      {loading && (
-        <div className="msg ai">
-          <div className="bubble">
-            <span className="dots">กำลังค้นพระไตรปิฎก<span>.</span><span>.</span><span>.</span></span>
-          </div>
-        </div>
-      )}
-
-      {error && <div className="msg ai"><div className="bubble" style={{ color: '#9c5a3c' }}>{error}</div></div>}
-
-      <div ref={bottomRef} />
-
-      <div className="input-bar">
-        <div className="tone-selector">
-          {TONES.map((t) => (
-            <button
-              key={t.id}
-              className={`tone-btn${tone === t.id ? ' active' : ''}`}
-              onClick={() => chooseTone(t.id)}
-              type="button"
-            >
-              {t.emoji} {t.label}
+          <div className="input-inner">
+            <textarea
+              ref={taRef}
+              rows={1}
+              className="chat-input"
+              placeholder="ถามอะไรก็ได้"
+              value={input}
+              onChange={(e) => { setInput(e.target.value); autoGrow(); }}
+              onKeyDown={onKey}
+              onFocus={onFocusInput}
+            />
+            <button className="send-btn" onClick={() => submit()} disabled={loading || !input.trim()}>
+              ↑
             </button>
-          ))}
+          </div>
+          <div className="free-note">ใช้งานฟรี ไม่จำกัด ไม่ต้องสมัครสมาชิก · คำตอบเป็นเพียงข้อมูลเบื้องต้น ควรศึกษาภายใต้การแนะนำของครูอาจารย์</div>
         </div>
-        <div className="input-inner">
-          <textarea
-            ref={taRef}
-            rows={1}
-            placeholder="ถามอะไรก็ได้"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={onKey}
-          />
-          <button className="send-btn" onClick={() => submit()} disabled={loading || !input.trim()}>
-            ↑
-          </button>
-        </div>
-        <div className="free-note">ใช้งานฟรี ไม่จำกัด ไม่ต้องสมัครสมาชิก · คำตอบเป็นเพียงข้อมูลเบื้องต้น ควรศึกษาภายใต้การแนะนำของครูอาจารย์</div>
       </div>
     </div>
   );

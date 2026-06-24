@@ -1,10 +1,17 @@
 import './globals.css';
 import Link from 'next/link';
-import { DanaButton } from '@/components/DanaButton';
 
 export const metadata = {
   title: 'Dhamma AI — ผู้ช่วยศึกษาพระไตรปิฎก',
   description: 'ถาม-ตอบพระธรรมจากพระไตรปิฎกภาษาไทย ฉบับสยามรัฐ 45 เล่ม พร้อมอ้างอิงแหล่งที่มาทุกคำตอบ',
+};
+
+// viewport-fit=cover → use the full screen incl. notch/home-indicator (iOS).
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({ children }) {
@@ -19,25 +26,20 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
-        <header className="site-header">
-          <div className="inner">
-            <Link href="/" className="brand">
-              <span className="lotus">🪷</span> Dhamma AI
-            </Link>
-            <nav style={{ display: 'flex', gap: 4 }}>
-              <Link href="/" className="nav-link">สนทนาธรรม</Link>
-              <Link href="/browse" className="nav-link">เรียกดูพระไตรปิฎก</Link>
-            </nav>
-          </div>
-        </header>
-        <main className="container">{children}</main>
-        <footer className="site-footer">
-          <div className="footer-inner">
-            <span className="footer-free">🪷 Dhamma AI ให้บริการฟรี</span>
-            <DanaButton context="footer" />
-            <Link href="/about/dana" className="footer-link">เราใช้เงินที่คุณสนับสนุนไปกับอะไรบ้าง</Link>
-          </div>
-        </footer>
+        <div className="app-shell">
+          <header className="site-header">
+            <div className="inner">
+              <Link href="/" className="brand">
+                <span className="lotus">🪷</span> Dhamma AI
+              </Link>
+              <nav style={{ display: 'flex', gap: 4 }}>
+                <Link href="/" className="nav-link">สนทนาธรรม</Link>
+                <Link href="/browse" className="nav-link">เรียกดูพระไตรปิฎก</Link>
+              </nav>
+            </div>
+          </header>
+          <main className="app-main">{children}</main>
+        </div>
       </body>
     </html>
   );

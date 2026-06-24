@@ -16,11 +16,59 @@
 html, body {
   margin: 0;
   padding: 0;
+  height: 100%;
+  overflow: hidden; /* only the chat body scrolls */
   background: var(--cream);
   color: var(--brown);
   font-family: 'Kanit', system-ui, sans-serif;
   line-height: 1.7;
   -webkit-font-smoothing: antialiased;
+}
+
+/* ── Fixed 3-layer shell (Phase 12) ─────────────────── */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh; /* dynamic viewport height — correct under iOS Safari toolbars */
+  overflow: hidden;
+  background: var(--cream);
+}
+.app-main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Chat page = scroll area (messages) + pinned bottom bar */
+.chat-page {
+  width: 100%;
+  max-width: 760px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.chat-scroll {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain; /* no bounce that looks like layout jump */
+}
+.chat-bottom {
+  flex-shrink: 0;
+  width: 100%;
+  background: var(--cream);
+  border-top: 1px solid var(--cream-deep);
+  padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
+}
+.dana-line {
+  display: flex; align-items: center; gap: 12px; justify-content: center; flex-wrap: wrap;
+  font-size: 0.82rem; color: var(--brown-soft); margin-bottom: 8px;
 }
 
 a { color: var(--gold); }
@@ -33,10 +81,9 @@ a { color: var(--gold); }
 
 /* ── Header ─────────────────────────────────────────── */
 .site-header {
+  flex-shrink: 0;
   border-bottom: 1px solid var(--cream-deep);
   background: var(--cream);
-  position: sticky;
-  top: 0;
   z-index: 10;
 }
 .site-header .inner {
@@ -54,7 +101,7 @@ a { color: var(--gold); }
 .nav-link.active { background: var(--gold); color: #fff; }
 
 /* ── Chat ───────────────────────────────────────────── */
-.chat-wrap { padding: 24px 0 160px; min-height: 60vh; }
+.chat-wrap { padding: 20px 0 24px; }
 .intro { text-align: center; color: var(--brown-soft); margin: 40px 0; }
 .intro h1 { color: var(--brown); font-size: 1.5rem; margin-bottom: 8px; }
 .suggest { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 18px; }
@@ -166,7 +213,11 @@ details.card[open] > summary { border-bottom: 1px solid var(--cream-deep); }
 @keyframes blink { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
 
 /* ── Browse ─────────────────────────────────────────── */
-.browse-wrap { padding: 28px 0 80px; }
+.browse-wrap {
+  width: 100%; max-width: 760px; flex: 1; min-height: 0;
+  overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+  padding: 24px 18px 60px;
+}
 .pitaka-group { margin-bottom: 26px; }
 .pitaka-title { color: var(--gold); font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; }
 .vol-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
@@ -276,7 +327,11 @@ details.card[open] > summary { border-bottom: 1px solid var(--cream-deep); }
 }
 
 /* ── Transparency page ──────────────────────────────── */
-.dana-page { padding: 28px 0 60px; }
+.dana-page {
+  width: 100%; max-width: 760px; flex: 1; min-height: 0;
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding: 24px 18px 60px;
+}
 .dana-page h1 { color: var(--brown); }
 .dana-page-intro { color: var(--brown-soft); line-height: 1.8; }
 .dana-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 22px 0; }
