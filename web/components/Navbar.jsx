@@ -11,6 +11,7 @@ export function Navbar() {
     <div className="inner">
       <Link href="/" className="brand">
         <span className="lotus">🪷</span> Dhamma AI
+        <span className="nav-free-tag">ใช้งานฟรี</span>
       </Link>
 
       <div className="nav-menu-wrapper">

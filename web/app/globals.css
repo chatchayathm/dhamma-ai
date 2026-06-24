@@ -66,16 +66,16 @@ html, body {
   border-top: 1px solid var(--cream-deep);
   padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
 }
-/* Footer bar — single clean line: brand left, actions right */
-.footer-bar {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 4px 0 8px; gap: 12px; flex-wrap: nowrap; overflow: hidden;
+/* Footer bar — collapsed by default (just a toggle arrow) */
+.footer-bar { display: flex; align-items: center; gap: 12px; min-height: 30px; padding: 2px 0 4px; }
+.footer-toggle {
+  background: none; border: none; color: var(--gold); font-size: 11px; cursor: pointer;
+  padding: 4px 6px; flex-shrink: 0; line-height: 1;
 }
-.footer-brand { font-size: 12px; color: var(--brown-soft); white-space: nowrap; flex-shrink: 0; }
-.footer-actions { display: flex; align-items: center; gap: 12px; flex-shrink: 1; overflow: hidden; }
+.footer-actions { display: flex; align-items: center; gap: 12px; flex: 1; overflow: hidden; }
 
 /* Tone dropdown (native select) */
-.tone-dropdown-wrapper { display: flex; justify-content: center; margin-bottom: 8px; }
+.tone-dropdown-wrapper { display: flex; justify-content: flex-end; margin-bottom: 8px; padding: 0 4px; }
 .tone-dropdown {
   appearance: none; -webkit-appearance: none;
   background-color: var(--cream);
@@ -116,6 +116,7 @@ a { color: var(--gold); }
 }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.15rem; color: var(--brown); text-decoration: none; }
 .brand .lotus { font-size: 1.4rem; }
+.nav-free-tag { font-weight: 400; font-size: 0.72rem; color: var(--brown-soft); letter-spacing: 0.2px; }
 .nav-link { font-size: 0.95rem; color: var(--brown-soft); text-decoration: none; padding: 6px 12px; border-radius: 999px; }
 .nav-link:hover { background: var(--cream-deep); }
 .nav-link.active { background: var(--gold); color: #fff; }

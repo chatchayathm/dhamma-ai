@@ -93,6 +93,7 @@ export default function ChatPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [tone, setTone] = useState('general');
+  const [footerOpen, setFooterOpen] = useState(false);
   const bottomRef = useRef(null);
   const taRef = useRef(null);
   const scrollRef = useRef(null);
@@ -157,12 +158,6 @@ export default function ChatPage() {
     <div className="chat-page">
       <div className="chat-scroll" ref={scrollRef}>
         <div className="container chat-wrap">
-          {messages.length === 0 && (
-            <div className="intro">
-              <h1>🪷 ถามอะไรก็ได้ เราจะหาคำตอบธรรมะตามพระไตรปิฎกให้</h1>
-            </div>
-          )}
-
           {messages.map((m, i) =>
             m.role === 'user' ? (
               <div className="msg user" key={i}><div className="bubble">{m.text}</div></div>
@@ -188,11 +183,20 @@ export default function ChatPage() {
       <div className="chat-bottom">
         <div className="container">
           <div className="footer-bar">
-            <span className="footer-brand">🪷 Dhamma AI ให้บริการฟรี</span>
-            <div className="footer-actions">
-              <DanaButton context="footer" />
-              <Link href="/about/dana" className="footer-link">เราใช้เงินที่คุณสนับสนุนไปกับอะไรบ้าง</Link>
-            </div>
+            <button
+              className="footer-toggle"
+              onClick={() => setFooterOpen(!footerOpen)}
+              aria-label={footerOpen ? 'ซ่อน' : 'แสดง'}
+              type="button"
+            >
+              {footerOpen ? '▲' : '▽'}
+            </button>
+            {footerOpen && (
+              <div className="footer-actions">
+                <DanaButton context="footer" />
+                <Link href="/about/dana" className="footer-link">เราใช้เงินที่คุณสนับสนุนไปกับอะไรบ้าง</Link>
+              </div>
+            )}
           </div>
           <div className="tone-dropdown-wrapper">
             <select
@@ -211,7 +215,7 @@ export default function ChatPage() {
               ref={taRef}
               rows={1}
               className="chat-input"
-              placeholder="ถามอะไรก็ได้"
+              placeholder="ถามอะไรก็ได้..."
               value={input}
               onChange={(e) => { setInput(e.target.value); autoGrow(); }}
               onKeyDown={onKey}
