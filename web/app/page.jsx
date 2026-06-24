@@ -15,12 +15,6 @@ const CONF_LABEL = {
   not_found: { th: 'ไม่พบแหล่งอ้างอิง', cls: 'not_found' },
 };
 
-const SUGGESTIONS = [
-  'การพิจารณาอาหารควรทำอย่างไร',
-  'สติปัฏฐาน ๔ มีอะไรบ้าง',
-  'พระพุทธเจ้าตรัสเรื่องความอดทนไว้อย่างไร',
-];
-
 const TONES = [
   { id: 'general', icon: '🌿', label: 'คนทั่วไป', description: 'ภาษาธรรมดา เข้าใจง่าย ไม่ต้องรู้ธรรมะมาก่อน' },
   { id: 'dhamma', icon: '🪷', label: 'สายธรรมะ', description: 'ภาษาธรรมะ อ้างอิงพระสูตร เหมาะกับผู้ปฏิบัติ' },
@@ -166,12 +160,6 @@ export default function ChatPage() {
           {messages.length === 0 && (
             <div className="intro">
               <h1>🪷 ถามอะไรก็ได้ เราจะหาคำตอบธรรมะตามพระไตรปิฎกให้</h1>
-              <p>ไม่สบายใจ? หาคำตอบแบบธรรมะ ๆ</p>
-              <div className="suggest">
-                {SUGGESTIONS.map((s) => (
-                  <button key={s} onClick={() => submit(s)}>{s}</button>
-                ))}
-              </div>
             </div>
           )}
 

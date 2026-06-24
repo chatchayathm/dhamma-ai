@@ -1,5 +1,5 @@
 import './globals.css';
-import Link from 'next/link';
+import { Navbar } from '../components/Navbar';
 
 export const metadata = {
   title: 'Dhamma AI — ผู้ช่วยศึกษาพระไตรปิฎก',
@@ -28,15 +28,7 @@ export default function RootLayout({ children }) {
       <body>
         <div className="app-shell">
           <header className="site-header">
-            <div className="inner">
-              <Link href="/" className="brand">
-                <span className="lotus">🪷</span> Dhamma AI
-              </Link>
-              <nav style={{ display: 'flex', gap: 4 }}>
-                <Link href="/" className="nav-link">สนทนาธรรม</Link>
-                <Link href="/browse" className="nav-link">เรียกดูพระไตรปิฎก</Link>
-              </nav>
-            </div>
+            <Navbar />
           </header>
           <main className="app-main">{children}</main>
         </div>
