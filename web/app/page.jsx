@@ -30,6 +30,37 @@ function Citation({ c }) {
   );
 }
 
+function CopyButton({ text }) {
+  const [copied, setCopied] = useState(false);
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(text || '');
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {}
+  }
+  return (
+    <button
+      className={`copy-btn${copied ? ' copied' : ''}`}
+      onClick={handleCopy}
+      aria-label="คัดลอกคำตอบ"
+      title={copied ? 'คัดลอกแล้ว' : 'คัดลอกคำตอบ'}
+      type="button"
+    >
+      {copied ? (
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M2 7l3.5 3.5L12 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ) : (
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M2 10V2h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+      )}
+    </button>
+  );
+}
+
 function AiMessage({ m }) {
   const conf = CONF_LABEL[m.confidence] || CONF_LABEL.not_found;
 
@@ -82,6 +113,10 @@ function AiMessage({ m }) {
         )}
 
         <FeedbackWidget question={m.question} answer={m.answer} />
+
+        <div className="bubble-actions">
+          <CopyButton text={m.answer} />
+        </div>
       </div>
     </div>
   );

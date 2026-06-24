@@ -116,12 +116,17 @@ a { color: var(--gold); }
 }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.15rem; color: var(--brown); text-decoration: none; }
 .brand .lotus { font-size: 1.4rem; }
-.nav-free-tag { font-weight: 400; font-size: 0.72rem; color: var(--brown-soft); letter-spacing: 0.2px; }
 .nav-link { font-size: 0.95rem; color: var(--brown-soft); text-decoration: none; padding: 6px 12px; border-radius: 999px; }
 .nav-link:hover { background: var(--cream-deep); }
 .nav-link.active { background: var(--gold); color: #fff; }
 
 /* Hamburger menu (replaces the two nav links) */
+.nav-right { display: flex; align-items: center; gap: 4px; }
+.nav-icon-btn {
+  background: none; border: none; color: var(--brown); cursor: pointer; padding: 6px;
+  display: flex; align-items: center; justify-content: center; border-radius: 6px; transition: background 0.15s;
+}
+.nav-icon-btn:hover { background: var(--cream-deep); }
 .nav-menu-wrapper { position: relative; }
 .hamburger-btn {
   background: none; border: none; color: var(--brown); cursor: pointer; padding: 6px;
@@ -367,6 +372,15 @@ details.card[open] > summary { border-bottom: 1px solid var(--cream-deep); }
 }
 .feedback-buttons button:hover { border-color: var(--gold); color: var(--gold); }
 .feedback-thanks { font-size: 0.85rem; color: var(--brown-soft); margin: 4px 0 0; }
+
+/* Copy answer button */
+.bubble-actions { display: flex; justify-content: flex-end; margin-top: 6px; padding-right: 2px; }
+.copy-btn {
+  background: none; border: none; color: #b7a080; cursor: pointer; padding: 4px; border-radius: 4px;
+  display: flex; align-items: center; transition: color 0.15s, background 0.15s;
+}
+.copy-btn:hover { color: var(--brown-soft); background: rgba(44, 24, 16, 0.05); }
+.copy-btn.copied { color: var(--sage); }
 .dana-suggestion { background: var(--sage-soft); border-radius: 12px; padding: 14px; }
 .dana-suggestion-text { font-size: 0.9rem; color: var(--brown); margin: 0 0 10px; line-height: 1.7; }
 .dana-skip {
