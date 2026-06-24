@@ -138,20 +138,22 @@ export async function getVolumeChapters(volume) {
 // "click to read" view.
 export async function getChunksFor(volume, suttaNumber, suttaName) {
   const c = client();
+  // Filter only on indexed fields (volume=integer, sutta_number=keyword). Narrow
+  // by sutta_name in JS afterwards so we never require an index on sutta_name
+  // (which is reserved for the cross-ref full-text index).
   const must = [
     { key: 'volume', match: { value: Number(volume) } },
     { key: 'sutta_number', match: { value: String(suttaNumber) } },
   ];
-  if (suttaName) must.push({ key: 'sutta_name', match: { value: suttaName } });
   const res = await c.scroll(config.qdrant.collection, {
     filter: { must },
     limit: 500,
     with_payload: true,
     with_vector: false,
   });
-  return res.points
-    .map((p) => p.payload)
-    .sort((a, b) => (a.chunk_index || 0) - (b.chunk_index || 0));
+  let points = res.points.map((p) => p.payload);
+  if (suttaName) points = points.filter((p) => p.sutta_name === suttaName);
+  return points.sort((a, b) => (a.chunk_index || 0) - (b.chunk_index || 0));
 }
 
 // Phase 9B: a full-text index on sutta_name lets cross-reference lookups match
