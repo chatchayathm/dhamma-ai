@@ -1,5 +1,18 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { Agent, fetch as undiciFetch } from 'undici';
 import { config } from '../config.js';
+
+// Render ⇄ api.anthropic.com keep-alive connections sometimes drop mid-request
+// ("Premature close"): undici reuses a pooled socket the server already closed.
+// Use a dispatcher with a very short keep-alive so a FRESH connection is opened
+// each call, and pass it via a custom fetch (the npm-undici global dispatcher
+// does NOT affect Node's built-in global fetch, so we must inject it directly).
+const dispatcher = new Agent({
+  keepAliveTimeout: 10, // ms — effectively no socket reuse
+  keepAliveMaxTimeout: 10,
+  connect: { timeout: 30_000 },
+});
+const resilientFetch = (url, opts = {}) => undiciFetch(url, { ...opts, dispatcher });
 
 // Single shared Anthropic client used by answer generation, topic
 // classification, and cross-reference extraction.
@@ -9,9 +22,8 @@ export function claude() {
   if (!_client) {
     _client = new Anthropic({
       apiKey: config.rag.anthropicApiKey,
-      // Anthropic returns 529 "Overloaded" under load; the SDK retries with
-      // exponential backoff. Bump retries so transient overload self-heals.
-      maxRetries: 5,
+      fetch: resilientFetch, // fresh connection per request
+      maxRetries: 6, // retry transient overload (529) + connection drops
       timeout: 60_000,
     });
   }
