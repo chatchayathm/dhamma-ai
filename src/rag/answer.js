@@ -106,7 +106,7 @@ export async function ask(question, { tone, ...retrieveOpts } = {}) {
   try {
     msg = await claude().messages.create({
       model: config.rag.model,
-      max_tokens: 1500,
+      max_tokens: 2000, // universal/story answers run long; 1500 cut them mid-sentence
       system,
       messages: [{ role: 'user', content: question }],
     });
