@@ -69,16 +69,20 @@ function buildSystem(tone, isComplex) {
   );
 }
 
-export async function generateAnantarikaResponse(question, tone) {
+export async function generateAnantarikaResponse(question, tone, history = []) {
   const isComplex = COMPLEX_KEYWORDS.some((k) => question.includes(k));
   const system = buildSystem(tone, isComplex);
 
   try {
+    const convo = [
+      ...history.map((h) => ({ role: h.role === 'assistant' ? 'assistant' : 'user', content: String(h.content) })),
+      { role: 'user', content: question },
+    ];
     const r = await claude().messages.create({
       model: config.rag.model,
       max_tokens: 2000,
       system,
-      messages: [{ role: 'user', content: question }],
+      messages: convo,
     });
     const answer = r.content.filter((b) => b.type === 'text').map((b) => b.text).join('').trim();
     return {

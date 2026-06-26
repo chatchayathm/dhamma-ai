@@ -10,11 +10,11 @@ async function http(path, opts) {
   return res.json();
 }
 
-export function askQuestion(question, { tone, session_id } = {}) {
+export function askQuestion(question, { tone, history, session_id } = {}) {
   return http('/api/ask', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ question, tone, session_id }),
+    body: JSON.stringify({ question, tone, history, session_id }),
   });
 }
 

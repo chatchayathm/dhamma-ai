@@ -251,6 +251,7 @@ details.card[open] > summary { border-bottom: 1px solid var(--cream-deep); }
 }
 .send-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .free-note { text-align: center; font-size: 0.75rem; color: var(--brown-soft); margin-top: 8px; }
+.session-note { text-align: center; font-size: 0.7rem; color: var(--brown-soft); opacity: 0.85; margin: 3px 0 0; }
 
 /* ── Tone selector ──────────────────────────────────── */
 .tone-selector { max-width: 760px; margin: 0 auto 8px; display: flex; gap: 8px; justify-content: center; }

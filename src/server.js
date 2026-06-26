@@ -37,14 +37,19 @@ app.post(
     if (!question) return res.status(400).json({ error: 'question is required' });
     const tone = ['general', 'dhamma'].includes(req.body?.tone) ? req.body.tone : 'general';
 
+    // Phase 15 — conversation history (sanitised: valid roles, non-empty, last 20).
+    const history = (Array.isArray(req.body?.history) ? req.body.history : [])
+      .filter((h) => h && (h.role === 'user' || h.role === 'assistant') && typeof h.content === 'string' && h.content.trim())
+      .slice(-20);
+
     // Phase 14 — anantarika-kamma takes a dedicated, high-accuracy path before
     // the normal RAG pipeline.
     if (detectAnantarika(question)) {
-      const a = await generateAnantarikaResponse(question, tone);
+      const a = await generateAnantarikaResponse(question, tone, history);
       return res.json({ mode: 'anantarika_mode', tone, ...a });
     }
 
-    const result = await ask(question, { tone });
+    const result = await ask(question, { tone, history });
     res.json({
       answer: result.answer,
       citations: result.citations,

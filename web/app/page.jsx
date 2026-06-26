@@ -139,6 +139,9 @@ export default function ChatPage() {
   const [error, setError] = useState('');
   const [tone, setTone] = useState('general');
   const [footerOpen, setFooterOpen] = useState(false);
+  const [sessionId] = useState(() =>
+    typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+  );
   const bottomRef = useRef(null);
   const taRef = useRef(null);
   const scrollRef = useRef(null);
@@ -180,10 +183,19 @@ export default function ChatPage() {
     if (!question || loading) return;
     setError('');
     setInput('');
+    // Phase 15 — build conversation history from completed turns (before adding
+    // the new user message), so Claude can answer follow-ups in context.
+    const history = messages
+      .filter((mm) => (mm.role === 'user' && mm.text) || (mm.role === 'ai' && mm.answer))
+      .slice(-20)
+      .map((mm) =>
+        mm.role === 'user' ? { role: 'user', content: mm.text } : { role: 'assistant', content: mm.answer },
+      );
+
     setMessages((m) => [...m, { role: 'user', text: question }]);
     setLoading(true);
     try {
-      const res = await askQuestion(question, { tone });
+      const res = await askQuestion(question, { tone, history, session_id: sessionId });
       setMessages((m) => [...m, { role: 'ai', question, ...res }]);
     } catch (e) {
       setError(`เกิดข้อผิดพลาด: ${e.message} (ตรวจสอบว่า API ที่ ${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'} รันอยู่)`);
@@ -271,6 +283,7 @@ export default function ChatPage() {
             </button>
           </div>
           <div className="free-note">ใช้งานฟรี ไม่จำกัด ไม่ต้องสมัครสมาชิก · คำตอบเป็นเพียงข้อมูลเบื้องต้น ควรศึกษาภายใต้การแนะนำของครูอาจารย์</div>
+          <p className="session-note">บทสนทนานี้จะหายไปเมื่อปิดหน้าต่าง — ไม่มีการเก็บข้อมูลของคุณค่ะ 🙏</p>
         </div>
       </div>
     </div>

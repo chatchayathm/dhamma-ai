@@ -2,6 +2,7 @@ import { config } from '../config.js';
 import { claude } from '../llm/claude.js';
 import { smartRetrieve, uniqueCitations } from './retrieve.js';
 import { classifyUniversalQuestion, buildUniversalSystem, VALID_TONES, DEFAULT_TONE } from './universal.js';
+import { buildContextualQuery } from './context.js';
 
 const SYSTEM_RULES = `คุณคือผู้ช่วยศึกษาพระธรรมที่มีความรู้ลึกในพระไตรปิฎกภาษาไทย ฉบับสยามรัฐ 45 เล่ม
 
@@ -55,14 +56,17 @@ function citationBlock(citations) {
 
 // Main entry: question → grounded answer + citations + confidence.
 // opts.tone ∈ general | dhamma (default general) changes style only.
-export async function ask(question, { tone, ...retrieveOpts } = {}) {
+export async function ask(question, { tone, history = [], ...retrieveOpts } = {}) {
   const activeTone = VALID_TONES.includes(tone) ? tone : DEFAULT_TONE;
+
+  // Phase 15 — resolve follow-ups ("แล้วสองอย่างนี้...") into a standalone query.
+  const contextualQ = await buildContextualQuery(question, history);
 
   // Phase 11 — classify (category + Dhamma angle + story detection), then search
   // the Tipitaka by the DHAMMA ANGLE rather than the surface words. e.g.
   // "ดาวเคราะห์เกิดได้ยังไง" → search "อนิจจัง ปฏิจจสมุปบาท".
-  const cls = await classifyUniversalQuestion(question);
-  const searchText = cls.dhamma_angle || question;
+  const cls = await classifyUniversalQuestion(contextualQ);
+  const searchText = cls.dhamma_angle || contextualQ;
   const { chunks, confidence, topScore, retrieved, stats } = await smartRetrieve(searchText, retrieveOpts);
 
   // Genuinely relevant scripture? (0.5 calibrated to voyage's Thai score range,
@@ -104,11 +108,16 @@ export async function ask(question, { tone, ...retrieveOpts } = {}) {
 
   let msg;
   try {
+    // Phase 15 — include prior turns so Claude answers coherently in context.
+    const convo = [
+      ...history.map((h) => ({ role: h.role === 'assistant' ? 'assistant' : 'user', content: String(h.content) })),
+      { role: 'user', content: question },
+    ];
     msg = await claude().messages.create({
       model: config.rag.model,
       max_tokens: 2000, // universal/story answers run long; 1500 cut them mid-sentence
       system,
-      messages: [{ role: 'user', content: question }],
+      messages: convo,
     });
   } catch (e) {
     // Anthropic overloaded (529) / rate-limited (429) / transient 5xx, even after
