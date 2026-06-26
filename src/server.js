@@ -8,6 +8,7 @@ import { ask } from './rag/answer.js';
 import { embedQuery } from './embed/embedder.js';
 import { searchVectors, scrollByFilter, buildFilter, getVolumeChapters, getChunksFor } from './store/qdrant.js';
 import { getVolume, VOLUMES } from './sources/volumes.js';
+import { detectAnantarika, generateAnantarikaResponse } from './rag/anantarika.js';
 
 const app = express();
 app.use(express.json({ limit: '256kb' }));
@@ -35,6 +36,14 @@ app.post(
     const question = (req.body?.question || '').trim();
     if (!question) return res.status(400).json({ error: 'question is required' });
     const tone = ['general', 'dhamma'].includes(req.body?.tone) ? req.body.tone : 'general';
+
+    // Phase 14 — anantarika-kamma takes a dedicated, high-accuracy path before
+    // the normal RAG pipeline.
+    if (detectAnantarika(question)) {
+      const a = await generateAnantarikaResponse(question, tone);
+      return res.json({ mode: 'anantarika_mode', tone, ...a });
+    }
+
     const result = await ask(question, { tone });
     res.json({
       answer: result.answer,

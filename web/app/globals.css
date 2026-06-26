@@ -183,6 +183,14 @@ a { color: var(--gold); }
 .badge.not_found { background: #eee; color: #777; }
 .meta-dim { font-size: 0.8rem; color: var(--brown-soft); }
 
+/* Phase 14 — refer-to-teacher card (sensitive / complex situations) */
+.refer-card {
+  display: flex; gap: 10px; align-items: flex-start;
+  background: var(--cream-deep); border: 1px solid var(--gold-soft); border-radius: 8px;
+  padding: 12px 14px; margin-top: 16px; font-size: 13px; color: #5c4a1e; line-height: 1.6;
+}
+.refer-card p { margin: 0; }
+
 /* Phase 11 — universal Dhamma */
 .dhamma-angle-tag {
   display: inline-block; margin-top: 12px; background: var(--sage-soft); color: #3f6b39;

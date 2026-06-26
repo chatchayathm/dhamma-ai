@@ -71,6 +71,16 @@ function AiMessage({ m }) {
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.answer}</ReactMarkdown>
         </div>
 
+        {m.is_complex_situation && (
+          <div className="refer-card">
+            <span>🙏</span>
+            <p>
+              สถานการณ์จริงในชีวิตมีรายละเอียดที่ซับซ้อนค่ะ ควรปรึกษาพระอาจารย์ผู้รู้โดยตรง
+              เพื่อคำแนะนำที่ตรงกับบริบทของท่านค่ะ
+            </p>
+          </div>
+        )}
+
         {m.dhamma_angle && (
           <div className="dhamma-angle-tag">🌿 มุมธรรมะ: {m.dhamma_angle}</div>
         )}
